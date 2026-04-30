@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import '../../../models/account.dart';
 import '../../../widgets/transfer_result_box.dart';
 import 'confirm_page.dart';
-
-//ransferencia (recibe accountId via pushNamed)
+// 🔹 PANTALLA 2: Transferencia (recibe Account via pushNamed)
 class TransferPage extends StatefulWidget {
   const TransferPage({super.key});
 
@@ -15,18 +15,10 @@ class _TransferPageState extends State<TransferPage> {
   String _result = '';
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // Recuperar el accountId pasado por pushNamed
-    final accountId = ModalRoute.of(context)?.settings.arguments as String?;
-    debugPrint('Account ID recibido: $accountId');
-  }
-
-  @override
   Widget build(BuildContext context) {
-    // Recuperar el accountId
-    final accountId = ModalRoute.of(context)?.settings.arguments as String? ?? 'Desconocida';
-
+    // Recuperar la cuenta pasada por pushNamed
+    final account = ModalRoute.of(context)?.settings.arguments as Account? ?? 
+        Account(id: 'Desconocida', name: 'Desconocida', balance: 0);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Transferencia'),
@@ -37,8 +29,13 @@ class _TransferPageState extends State<TransferPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Cuenta seleccionada: $accountId',
+              'Cuenta: ${account.name}',
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Saldo disponible: ${account.balanceFormatted}',
+              style: const TextStyle(fontSize: 14, color: Colors.grey),
             ),
             const SizedBox(height: 20),
             const Text('Ingresa el monto a transferir:'),
@@ -53,7 +50,7 @@ class _TransferPageState extends State<TransferPage> {
               ),
             ),
             const SizedBox(height: 20),
-            // Navegación imperativa con push
+            // 🔹 TIPO 2: Push imperativo + await
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -65,24 +62,46 @@ class _TransferPageState extends State<TransferPage> {
                     return;
                   }
 
-                  //Push imperativo + await para recibir resultado
-                  final resultado = await Navigator.push(
+                  final amount = double.tryParse(_amountController.text);
+                  if (amount == null || amount <= 0) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Monto inválido')),
+                    );
+                    return;
+                  }
+
+                  // Validar saldo suficiente
+                  if (amount > account.balance) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Saldo insuficiente')),
+                    );
+                    return;
+                  }
+
+                  // 🔹 TIPO 2 y 3: Push imperativo + await para recibir resultado
+                  final updatedAccount = await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => ConfirmPage(
-                        accountId: accountId,
+                        account: account,
                         amount: _amountController.text,
                       ),
                     ),
                   );
 
-                  if (resultado != null) {
+                  if (updatedAccount != null && updatedAccount is Account) {
                     setState(() {
-                      _result = resultado as String;
+                      account.balance = updatedAccount.balance;
+                      _result = '✅ Transferencia de \$${_amountController.text} exitosa';
                     });
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text(_result)),
                     );
+                    
+                    // Devolver cuenta actualizada al home
+                    Future.delayed(const Duration(milliseconds: 500), () {
+                      Navigator.pop(context, updatedAccount);
+                    });
                   }
                 },
                 child: const Text('Continuar a Confirmación'),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../models/account.dart';
 import '../widgets/account_list_tile.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -11,10 +12,10 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final List<Map<String, String>> accounts = [
-    {'id': 'ACC001', 'name': 'Cuenta Corriente', 'balance': '\$5,000'},
-    {'id': 'ACC002', 'name': 'Cuenta Ahorro', 'balance': '\$12,500'},
-    {'id': 'ACC003', 'name': 'Cuenta Inversión', 'balance': '\$25,000'},
+  late List<Account> accounts = [
+    Account(id: 'ACC001', name: 'Cuenta Corriente', balance: 5000.00),
+    Account(id: 'ACC002', name: 'Cuenta Ahorro', balance: 12500.00),
+    Account(id: 'ACC003', name: 'Cuenta Inversión', balance: 25000.00),
   ];
 
   @override
@@ -29,16 +30,23 @@ class _MyHomePageState extends State<MyHomePage> {
         itemBuilder: (context, index) {
           final account = accounts[index];
           return AccountListTile(
-            accountId: account['id']!,
-            accountName: account['name']!,
-            balance: account['balance']!,
-            //  Navegación con pushNamed + parámetro
-            onTap: () {
-              Navigator.pushNamed(
+            accountId: account.id,
+            accountName: account.name,
+            balance: account.balanceFormatted,
+            //pushNamed + parámetro + esperar retorno
+            onTap: () async {
+              // Pasar el índice para poder actualizar luego
+              final updatedAccount = await Navigator.pushNamed(
                 context,
                 '/transfer',
-                arguments: account['id'],
+                arguments: account,
               );
+              
+              if (updatedAccount != null && updatedAccount is Account) {
+                setState(() {
+                  accounts[index] = updatedAccount;
+                });
+              }
             },
           );
         },
@@ -46,4 +54,5 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
+
 

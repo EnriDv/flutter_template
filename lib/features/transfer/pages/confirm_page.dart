@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
+import '../../../models/account.dart';
 import '../../../widgets/transfer_summary_card.dart';
 
-// Confirmación (devuelve resultado con pop)
+// 🔹 PANTALLA 3: Confirmación (devuelve Account actualizado con pop)
 class ConfirmPage extends StatelessWidget {
-  final String accountId;
+  final Account account;
   final String amount;
 
   const ConfirmPage({
     super.key,
-    required this.accountId,
+    required this.account,
     required this.amount,
   });
 
@@ -29,7 +30,7 @@ class ConfirmPage extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             TransferSummaryCard(
-              accountId: accountId,
+              accountId: account.id,
               amount: amount,
             ),
             const SizedBox(height: 30),
@@ -37,11 +38,13 @@ class ConfirmPage extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () {
-                  //Navegación con pop + retorno de valor
-                  Navigator.pop(
-                    context,
-                    '✅ Transferencia de \$$amount exitosa',
+                  // 🔹 TIPO 3: Pop + retorno de Account actualizado
+                  final transferAmount = double.parse(amount);
+                  final updatedAccount = account.copyWith(
+                    balance: account.balance - transferAmount,
                   );
+                  
+                  Navigator.pop(context, updatedAccount);
                 },
                 icon: const Icon(Icons.check_circle),
                 label: const Text('Confirmar Transferencia'),
