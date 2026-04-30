@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import '../../../models/account.dart';
 import '../../../widgets/transfer_result_box.dart';
 import 'confirm_page.dart';
-// 🔹 PANTALLA 2: Transferencia (recibe Account via pushNamed)
+
+// 🔹 PANTALLA 2: Transferencia (recibe sourceAccount + allAccounts)
 class TransferPage extends StatefulWidget {
   const TransferPage({super.key});
 
@@ -13,12 +14,24 @@ class TransferPage extends StatefulWidget {
 class _TransferPageState extends State<TransferPage> {
   final TextEditingController _amountController = TextEditingController();
   String _result = '';
+  Account? _destinationAccount;
 
   @override
   Widget build(BuildContext context) {
-    // Recuperar la cuenta pasada por pushNamed
-    final account = ModalRoute.of(context)?.settings.arguments as Account? ?? 
+    // Recuperar argumentos
+    final arguments = ModalRoute.of(context)?.settings.arguments as Map? ?? {};
+    final sourceAccount = arguments['sourceAccount'] as Account? ?? 
         Account(id: 'Desconocida', name: 'Desconocida', balance: 0);
+    final allAccounts = (arguments['allAccounts'] as List?)?.cast<Account>() ?? [];
+    
+    // Cuentas disponibles como destino (excluyendo la cuenta origen)
+    final destinationOptions = allAccounts.where((acc) => acc.id != sourceAccount.id).toList();
+    
+    // Inicializar destino si no está seleccionado
+    if (_destinationAccount == null && destinationOptions.isNotEmpty) {
+      _destinationAccount = destinationOptions.first;
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Transferencia'),
@@ -28,18 +41,59 @@ class _TransferPageState extends State<TransferPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Cuenta: ${account.name}',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Saldo disponible: ${account.balanceFormatted}',
-              style: const TextStyle(fontSize: 14, color: Colors.grey),
+            // ORIGEN
+            Card(
+              color: Colors.blue.shade50,
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Desde:',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      sourceAccount.name,
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Saldo: ${sourceAccount.balanceFormatted}',
+                      style: const TextStyle(fontSize: 14, color: Colors.grey),
+                    ),
+                  ],
+                ),
+              ),
             ),
             const SizedBox(height: 20),
-            const Text('Ingresa el monto a transferir:'),
-            const SizedBox(height: 10),
+
+            // DESTINO (dropdown)
+            const Text(
+              'Transferir a:',
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            DropdownButton<Account>(
+              isExpanded: true,
+              value: _destinationAccount,
+              onChanged: (Account? newValue) {
+                setState(() {
+                  _destinationAccount = newValue;
+                });
+              },
+              items: destinationOptions.map((Account account) {
+                return DropdownMenuItem<Account>(
+                  value: account,
+                  child: Text('${account.name} - ${account.balanceFormatted}'),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 20),
+
+            // MONTO
+            const Text('Monto a transferir:'),
+            const SizedBox(height: 8),
             TextField(
               controller: _amountController,
               keyboardType: TextInputType.number,
@@ -50,7 +104,8 @@ class _TransferPageState extends State<TransferPage> {
               ),
             ),
             const SizedBox(height: 20),
-            // 🔹 TIPO 2: Push imperativo + await
+
+            // BOTÓN CONTINUAR
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -70,37 +125,43 @@ class _TransferPageState extends State<TransferPage> {
                     return;
                   }
 
-                  // Validar saldo suficiente
-                  if (amount > account.balance) {
+                  if (amount > sourceAccount.balance) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Saldo insuficiente')),
                     );
                     return;
                   }
 
-                  // 🔹 TIPO 2 y 3: Push imperativo + await para recibir resultado
-                  final updatedAccount = await Navigator.push(
+                  if (_destinationAccount == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Selecciona una cuenta destino')),
+                    );
+                    return;
+                  }
+
+                  // 🔹 TIPO 2 y 3: Push imperativo + await
+                  final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => ConfirmPage(
-                        account: account,
+                        sourceAccount: sourceAccount,
+                        destinationAccount: _destinationAccount!,
                         amount: _amountController.text,
                       ),
                     ),
                   );
 
-                  if (updatedAccount != null && updatedAccount is Account) {
+                  if (result != null && result is Map<String, Account>) {
                     setState(() {
-                      account.balance = updatedAccount.balance;
-                      _result = '✅ Transferencia de \$${_amountController.text} exitosa';
+                      _result = '✅ Transferencia de \$${_amountController.text} completada';
                     });
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text(_result)),
                     );
-                    
-                    // Devolver cuenta actualizada al home
+
+                    // Devolver ambas cuentas actualizadas al home
                     Future.delayed(const Duration(milliseconds: 500), () {
-                      Navigator.pop(context, updatedAccount);
+                      Navigator.pop(context, result);
                     });
                   }
                 },

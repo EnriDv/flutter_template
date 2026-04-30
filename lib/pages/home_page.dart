@@ -33,18 +33,27 @@ class _MyHomePageState extends State<MyHomePage> {
             accountId: account.id,
             accountName: account.name,
             balance: account.balanceFormatted,
-            //pushNamed + parámetro + esperar retorno
+            // 🔹 TIPO 1: pushNamed + parámetro (pasar todas las cuentas)
             onTap: () async {
-              // Pasar el índice para poder actualizar luego
-              final updatedAccount = await Navigator.pushNamed(
+              final result = await Navigator.pushNamed(
                 context,
                 '/transfer',
-                arguments: account,
+                arguments: {
+                  'sourceAccount': account,
+                  'allAccounts': accounts,
+                },
               );
-              
-              if (updatedAccount != null && updatedAccount is Account) {
+
+              // Actualizar cuentas si la transferencia fue exitosa
+              if (result != null && result is Map<String, Account>) {
                 setState(() {
-                  accounts[index] = updatedAccount;
+                  // Actualizar ambas cuentas
+                  result.forEach((id, updatedAccount) {
+                    final accountIndex = accounts.indexWhere((acc) => acc.id == id);
+                    if (accountIndex >= 0) {
+                      accounts[accountIndex] = updatedAccount;
+                    }
+                  });
                 });
               }
             },

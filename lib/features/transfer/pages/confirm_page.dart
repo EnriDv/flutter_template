@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import '../../../models/account.dart';
-import '../../../widgets/transfer_summary_card.dart';
 
-// 🔹 PANTALLA 3: Confirmación (devuelve Account actualizado con pop)
+// Confirmación (actualiza origen y destino)
 class ConfirmPage extends StatelessWidget {
-  final Account account;
+  final Account sourceAccount;
+  final Account destinationAccount;
   final String amount;
 
   const ConfirmPage({
     super.key,
-    required this.account,
+    required this.sourceAccount,
+    required this.destinationAccount,
     required this.amount,
   });
 
@@ -29,22 +30,82 @@ class ConfirmPage extends StatelessWidget {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
-            TransferSummaryCard(
-              accountId: account.id,
-              amount: amount,
+            
+            // ORIGEN
+            Card(
+              color: Colors.red.shade50,
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('De:', style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text(sourceAccount.name),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Saldo actual: ${sourceAccount.balanceFormatted}',
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // MONTO
+            Center(
+              child: Text(
+                '\$${amount}',
+                style: const TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // DESTINO
+            Card(
+              color: Colors.green.shade50,
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Para:', style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text(destinationAccount.name),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Saldo actual: ${destinationAccount.balanceFormatted}',
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                  ],
+                ),
+              ),
             ),
             const SizedBox(height: 30),
+
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () {
-                  // 🔹 TIPO 3: Pop + retorno de Account actualizado
+                  // Pop + retorno (ambas cuentas actualizadas)
                   final transferAmount = double.parse(amount);
-                  final updatedAccount = account.copyWith(
-                    balance: account.balance - transferAmount,
+                  
+                  final updatedSource = sourceAccount.copyWith(
+                    balance: sourceAccount.balance - transferAmount,
                   );
                   
-                  Navigator.pop(context, updatedAccount);
+                  final updatedDestination = destinationAccount.copyWith(
+                    balance: destinationAccount.balance + transferAmount,
+                  );
+                  
+                  // Devolver ambas cuentas en un Map
+                  Navigator.pop(context, {
+                    updatedSource.id: updatedSource,
+                    updatedDestination.id: updatedDestination,
+                  });
                 },
                 icon: const Icon(Icons.check_circle),
                 label: const Text('Confirmar Transferencia'),
