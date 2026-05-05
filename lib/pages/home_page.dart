@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/constants/app_routes.dart';
 import '../models/account.dart';
 import '../widgets/account_list_tile.dart';
 
@@ -33,18 +34,16 @@ class _MyHomePageState extends State<MyHomePage> {
             accountId: account.id,
             accountName: account.name,
             balance: account.balanceFormatted,
-            // 🔹 TIPO 1: pushNamed + parámetro (pasar todas las cuentas)
             onTap: () async {
               final result = await Navigator.pushNamed(
                 context,
-                '/transfer',
+                AppRoutes.transfer,
                 arguments: {
-                  'sourceAccount': account,
-                  'allAccounts': accounts,
+                  AppRoutes.argSourceAccount: account,
+                  AppRoutes.argAllAccounts: accounts,
                 },
               );
 
-              // Actualizar cuentas si la transferencia fue exitosa
               if (result != null && result is Map<String, Account>) {
                 setState(() {
                   // Actualizar ambas cuentas
