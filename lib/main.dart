@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'core/constants/app_routes.dart';
 import 'pages/home_page.dart';
 import 'features/transfer/pages/transfer_page.dart';
 
@@ -9,7 +10,6 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // Rutas nombradas con parámetros
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
       ),
       home: const MyHomePage(title: 'Selecciona una cuenta'),
       routes: {
-        '/transfer': (context) => const TransferPage(),
+        AppRoutes.transfer: (context) => const TransferPage(),
       },
     );
   }
