@@ -24,10 +24,8 @@ class _TransferPageState extends State<TransferPage> {
         Account(id: 'Desconocida', name: 'Desconocida', balance: 0);
     final allAccounts = (arguments['allAccounts'] as List?)?.cast<Account>() ?? [];
     
-    // Cuentas disponibles como destino (excluyendo la cuenta origen)
     final destinationOptions = allAccounts.where((acc) => acc.id != sourceAccount.id).toList();
     
-    // Inicializar destino si no está seleccionado
     if (_destinationAccount == null && destinationOptions.isNotEmpty) {
       _destinationAccount = destinationOptions.first;
     }
@@ -105,7 +103,6 @@ class _TransferPageState extends State<TransferPage> {
             ),
             const SizedBox(height: 20),
 
-            // BOTÓN CONTINUAR
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -139,7 +136,7 @@ class _TransferPageState extends State<TransferPage> {
                     return;
                   }
 
-                  // 🔹 TIPO 2 y 3: Push imperativo + await
+                  // Push imperativo + await
                   final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -159,10 +156,10 @@ class _TransferPageState extends State<TransferPage> {
                       SnackBar(content: Text(_result)),
                     );
 
-                    // Devolver ambas cuentas actualizadas al home
-                    Future.delayed(const Duration(milliseconds: 500), () {
+                    // Devolver un solo pop
+                    if (mounted) {
                       Navigator.pop(context, result);
-                    });
+                    }
                   }
                 },
                 child: const Text('Continuar a Confirmación'),
