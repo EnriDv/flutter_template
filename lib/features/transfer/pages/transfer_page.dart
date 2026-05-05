@@ -124,7 +124,7 @@ class _TransferPageState extends State<TransferPage> {
                       builder: (context) => ConfirmPage(
                         sourceAccount: sourceAccount,
                         destinationAccount: _destinationAccount!,
-                        amount: _amountController.text,
+                        amount: amount.toString(),
                       ),
                     ),
                   );
