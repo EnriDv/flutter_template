@@ -109,36 +109,15 @@ class _TransferPageState extends State<TransferPage> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () async {
-                  if (_amountController.text.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Por favor ingresa un monto')),
-                    );
+                  // Validar input
+                  final validationError = _validateTransfer(sourceAccount);
+                  if (validationError != null) {
+                    _showErrorSnackBar(validationError);
                     return;
                   }
 
-                  final amount = double.tryParse(_amountController.text);
-                  if (amount == null || amount <= 0) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Monto inválido')),
-                    );
-                    return;
-                  }
+                  final amount = double.parse(_amountController.text);
 
-                  if (amount > sourceAccount.balance) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Saldo insuficiente')),
-                    );
-                    return;
-                  }
-
-                  if (_destinationAccount == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Selecciona una cuenta destino')),
-                    );
-                    return;
-                  }
-
-                  // Push imperativo + await
                   final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -150,13 +129,12 @@ class _TransferPageState extends State<TransferPage> {
                     ),
                   );
 
+                  // Manejar resultado solo si es válido
                   if (result != null && result is Map<String, Account>) {
                     setState(() {
                       _result = '✅ Transferencia de \$${_amountController.text} completada';
                     });
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(_result)),
-                    );
+                    _showSuccessSnackBar(_result);
 
                   }
                 },
@@ -170,6 +148,42 @@ class _TransferPageState extends State<TransferPage> {
           ],
         ),
       ),
+    );
+  }
+
+  /// Valida todos los datos de la transferencia
+  String? _validateTransfer(Account sourceAccount) {
+    if (_amountController.text.isEmpty) {
+      return 'Por favor ingresa un monto';
+    }
+
+    final amount = double.tryParse(_amountController.text);
+    if (amount == null || amount <= 0) {
+      return 'Monto inválido';
+    }
+
+    if (amount > sourceAccount.balance) {
+      return 'Saldo insuficiente';
+    }
+
+    if (_destinationAccount == null) {
+      return 'Selecciona una cuenta destino';
+    }
+
+    return null;
+  }
+
+  /// Muestra mensaje de error
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
+    );
+  }
+
+  /// Muestra mensaje de éxito
+  void _showSuccessSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.green),
     );
   }
 

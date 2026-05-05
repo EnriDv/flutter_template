@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import '../../../models/account.dart';
 
-// Confirmación (actualiza origen y destino)
+/// PANTALLA 3: Confirmación de transferencia
+/// Muestra el resumen de la transferencia y permite confirmar o cancelar.
+/// 
+/// Retorna:
+/// - Map<String, Account> si se confirma (ambas cuentas actualizadas)
+/// - null si se cancela
 class ConfirmPage extends StatelessWidget {
   final Account sourceAccount;
   final Account destinationAccount;
@@ -86,40 +91,25 @@ class ConfirmPage extends StatelessWidget {
             ),
             const SizedBox(height: 30),
 
+            // BOTÓN CONFIRMAR
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () {
-                  // Pop + retorno (ambas cuentas actualizadas)
-                  final transferAmount = double.parse(amount);
-                  
-                  final updatedSource = sourceAccount.copyWith(
-                    balance: sourceAccount.balance - transferAmount,
-                  );
-                  
-                  final updatedDestination = destinationAccount.copyWith(
-                    balance: destinationAccount.balance + transferAmount,
-                  );
-                  
-                  final result = {
-                    updatedSource.id: updatedSource,
-                    updatedDestination.id: updatedDestination,
-                  };
-                  
-                  Navigator.pop(context);
-                  
-                  Navigator.pop(context, result);
+                  _handleConfirmation(context);
                 },
                 icon: const Icon(Icons.check_circle),
                 label: const Text('Confirmar Transferencia'),
               ),
             ),
             const SizedBox(height: 10),
+            
+            // BOTÓN CANCELAR
             SizedBox(
               width: double.infinity,
               child: OutlinedButton(
                 onPressed: () {
-                  Navigator.pop(context);
+                  Navigator.pop(context, null);
                 },
                 child: const Text('Cancelar'),
               ),
@@ -128,5 +118,31 @@ class ConfirmPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// Procesa la confirmación de transferencia
+  /// Calcula los nuevos saldos y hace dos pops:
+  /// 1. Cierra CONFIRM_PAGE (regresa a TRANSFER_PAGE sin valor)
+  /// 2. Cierra TRANSFER_PAGE (regresa a HOME_PAGE con resultado)
+  /// Vuelve directo a HOME_PAGE saltando TRANSFER_PAGE
+  void _handleConfirmation(BuildContext context) {
+    final transferAmount = double.parse(amount);
+    
+    final updatedSource = sourceAccount.copyWith(
+      balance: sourceAccount.balance - transferAmount,
+    );
+    
+    final updatedDestination = destinationAccount.copyWith(
+      balance: destinationAccount.balance + transferAmount,
+    );
+    
+    final result = {
+      updatedSource.id: updatedSource,
+      updatedDestination.id: updatedDestination,
+    };
+    
+    Navigator.pop(context);
+    
+    Navigator.pop(context, result);
   }
 }
