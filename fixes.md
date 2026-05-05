@@ -61,6 +61,7 @@ Navigator.pushNamed(context, AppRoutes.transfer, arguments: {
   AppRoutes.argAllAccounts: accounts,
 });
 ```
+commit: https://github.com/EnriDv/flutter_template/commit/9eb1f0ed9451c199c1f4c652fd6b4814cbda9c64
 
 ---
 
@@ -108,6 +109,8 @@ if (result != null && result is Map<String, Account>) {
 }
 ```
 
+commit: https://github.com/EnriDv/flutter_template/commit/47609974e648484a8398213e0a02621d1e8eb637
+
 ---
 
 ### 3. **Pop Sin Retorno de Valores** ❌→✅
@@ -149,6 +152,9 @@ Documentación en `ConfirmPage`:
 /// - Map<String, Account> si se confirma (ambas cuentas actualizadas)
 /// - null si se cancela
 ```
+
+commit: https://github.com/EnriDv/flutter_template/commit/47609974e648484a8398213e0a02621d1e8eb637
+
 
 ---
 
@@ -202,6 +208,8 @@ if (validationError != null) {
 }
 ```
 
+commit: https://github.com/EnriDv/flutter_template/commit/1e969847c4ff255431182e98d9ccf9bd1d451e79
+
 ---
 
 ### 5. **Métodos de Utilidad para SnackBars** ✨
@@ -224,34 +232,9 @@ void _showSuccessSnackBar(String message) {
 }
 ```
 
+commit: https://github.com/EnriDv/flutter_template/commit/1e969847c4ff255431182e98d9ccf9bd1d451e79
 
 ---
-
-### 6. **Gestión de Controladores** ✅
-**Mantención de buena práctica:**
-- El `TextEditingController` se libera correctamente en `dispose()`
-- Evita fugas de memoria
-
-```dart
-@override
-void dispose() {
-  _amountController.dispose();
-  super.dispose();
-}
-```
-
----
-
-### 7. **Comprobación de Contexto Montado** ✅
-**Mejora:**
-- Agregada comprobación `if (mounted)` antes de usar contexto en `Future.delayed`
-- Evita errores si el widget se desmonta durante operaciones asincrónicas
-
-```dart
-if (mounted) {
-  Navigator.pop(context, result);
-}
-```
 
 ---
 
