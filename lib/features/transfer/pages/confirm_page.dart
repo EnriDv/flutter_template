@@ -101,11 +101,14 @@ class ConfirmPage extends StatelessWidget {
                     balance: destinationAccount.balance + transferAmount,
                   );
                   
-                  // Devolver ambas cuentas en un Map
-                  Navigator.pop(context, {
+                  final result = {
                     updatedSource.id: updatedSource,
                     updatedDestination.id: updatedDestination,
-                  });
+                  };
+                  
+                  Navigator.pop(context);
+                  
+                  Navigator.pop(context, result);
                 },
                 icon: const Icon(Icons.check_circle),
                 label: const Text('Confirmar Transferencia'),

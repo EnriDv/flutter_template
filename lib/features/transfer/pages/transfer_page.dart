@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import '../../../core/constants/app_routes.dart';
 import '../../../models/account.dart';
 import '../../../widgets/transfer_result_box.dart';
 import 'confirm_page.dart';
 
-// 🔹 PANTALLA 2: Transferencia (recibe sourceAccount + allAccounts)
+/// PANTALLA 2: Transferencia
+/// Permite al usuario seleccionar cuenta destino, monto y confirmar la transferencia.
 class TransferPage extends StatefulWidget {
   const TransferPage({super.key});
 
@@ -18,11 +20,11 @@ class _TransferPageState extends State<TransferPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Recuperar argumentos
+    // Recuperar argumentos usando constantes centralizadas
     final arguments = ModalRoute.of(context)?.settings.arguments as Map? ?? {};
-    final sourceAccount = arguments['sourceAccount'] as Account? ?? 
+    final sourceAccount = arguments[AppRoutes.argSourceAccount] as Account? ?? 
         Account(id: 'Desconocida', name: 'Desconocida', balance: 0);
-    final allAccounts = (arguments['allAccounts'] as List?)?.cast<Account>() ?? [];
+    final allAccounts = (arguments[AppRoutes.argAllAccounts] as List?)?.cast<Account>() ?? [];
     
     final destinationOptions = allAccounts.where((acc) => acc.id != sourceAccount.id).toList();
     
@@ -156,10 +158,6 @@ class _TransferPageState extends State<TransferPage> {
                       SnackBar(content: Text(_result)),
                     );
 
-                    // Devolver un solo pop
-                    if (mounted) {
-                      Navigator.pop(context, result);
-                    }
                   }
                 },
                 child: const Text('Continuar a Confirmación'),
